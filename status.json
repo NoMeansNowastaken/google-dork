@@ -1,1 +1,6 @@
-
+{
+  "Google":true
+  "DuckDuckGo":false
+  "Bing":false
+  "Yandex":false
+}
