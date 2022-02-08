@@ -20,13 +20,15 @@ def statuscheck(engin):
         return True
     elif engin == '4' and json['Yandex']:
         return True
+    elif engin == '5' and json['Nintendo']:
+        return True
     else:
         return False
 
 
 def main():
     engine = input(
-        f"[{Fore.RED}*{Fore.RESET}] Choose Search Engine\n\n[{Fore.RED}1{Fore.RESET}] Google\n[{Fore.RED}2{Fore.RESET}] DuckDuckGo\n[{Fore.RED}3{Fore.RESET}] Bing\n[{Fore.RED}4{Fore.RESET}] Yandex\n[{Fore.RED}5{Fore.RESET}] Exit\n\n[{Fore.RED}*{Fore.RESET}] ")
+        f"[{Fore.RED}*{Fore.RESET}] Choose Search Engine\n\n[{Fore.RED}1{Fore.RESET}] Google\n[{Fore.RED}2{Fore.RESET}] DuckDuckGo\n[{Fore.RED}3{Fore.RESET}] Bing\n[{Fore.RED}4{Fore.RESET}] Yandex\n[{Fore.RED}5{Fore.RESET}] Nintendo\n[{Fore.RED}99{Fore.RESET}] Exit\n\n[{Fore.RED}*{Fore.RESET}] ")
     if not statuscheck(engine):
         print(f'''{Fore.RED}[!]{Fore.RESET} Engine is patched, try another''')
         main()
@@ -52,9 +54,8 @@ def main():
             except FileNotFoundError:
                 print(f'{Fore.LIGHTRED_EX}[*] No results to overwrite')
     rmdupe = input(f'''{Fore.CYAN}Would you like to remove duplicate results?: {Fore.RESET}''')
-    pages = input(f'''{Fore.CYAN}How many pages would you like to search?: {Fore.RESET}''')
     try:
-        pages = int(pages)
+        pages = int(input(f'''{Fore.CYAN}How many pages would you like to search?: {Fore.RESET}'''))
     except ValueError:
         print(f'''{Fore.LIGHTRED_EX}[*] {Fore.RESET}Invalid input, defaulting to 20 pages''')
         pages = 20
@@ -91,28 +92,60 @@ def main():
     elif engine == '2':
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'}
-        url = f'https://duckduckgo.com/?q={dork}'
+        url = f'https://duckduckgo.com/html?q={dork}'
         if proxy == 'y':
             proxy = {'http': proxies[1 % len(proxies)].strip()}
             r = requests.get(url, proxies=proxy, headers=headers)
         else:
-            r = requests.get(url)
+            r = requests.get(url, headers=headers)
         if r.status_code == 200:
             html = r.text
             soup = BeautifulSoup(html, 'html.parser')
             thing = soup.find_all('a')
             for i in thing:
-                if 'http' in i.get('href'):
-                    result = i.get('href').split('=')[1].split('&')[0]
-                    print(f'''{Fore.GREEN}[+]{Fore.RESET} Found: {result}''')
-                    if save:
-                        with open('results.txt', 'a') as f:
-                            f.write(f'{result}\n')
+                try:
+                    if 'http' in i.get('href'):
+                        result = i.get('href')
+                        print(f'''{Fore.GREEN}[+]{Fore.RESET} Found: {result}''')
+                        if save:
+                            with open('results.txt', 'a') as f:
+                                f.write(f'{result}\n')
+                except TypeError:
+                    pass
         else:
             if r.status_code == 418:
                 patched()
             else:
                 print(f'''{Fore.RED}[!]{Fore.RESET} Something went wrong! Error: {r.status_code}''')
+    elif engine == '5':
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'}
+        for b in range(pages):
+            url = f'https://www.nintendo.com/search/#category=all&page={b}&query={dork}'
+            if proxy == 'y':
+                proxy = {'http': proxies[1 % len(proxies)].strip()}
+                r = requests.get(url, proxies=proxy, headers=headers)
+            else:
+                r = requests.get(url, headers=headers)
+            if r.status_code == 200:
+                html = r.text
+                soup = BeautifulSoup(html, 'html.parser')
+                thing = soup.find_all('a')
+                for i in thing:
+                    result = i.get('href')
+                    if 'https://' in result:
+                        pass
+                    elif 'http://' in result:
+                        pass
+                    else:
+                        print(f'''{Fore.GREEN}[+]{Fore.RESET} Found: {result}''')
+                        if save:
+                            with open('results.txt', 'a') as f:
+                                f.write(f'{result}\n')
+            else:
+                print(f'''{Fore.RED}[!]{Fore.RESET} Something went wrong! Error: {r.status_code}''')
+    elif engine == '99':
+        exit()
     if rmdupe == 'y' or rmdupe == 'Y' or rmdupe == 'yes' or rmdupe == 'Yes' or rmdupe == 'YES':
         print(f'''{Fore.GREEN}[*]{Fore.RESET} Removing duplicates...''')
         dupes = 0
