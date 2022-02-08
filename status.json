@@ -1,6 +1,7 @@
 {
   "Google":true,
-  "DuckDuckGo":false,
+  "DuckDuckGo":true,
   "Bing":false,
   "Yandex":false
+  "Nintendo":false
 }
